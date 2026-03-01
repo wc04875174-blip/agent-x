@@ -1,0 +1,740 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎭 心機間諜</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Special+Elite&display=swap');
+
+  :root {
+    --bg: #0d0d0f;
+    --surface: #141418;
+    --card: #1c1c22;
+    --border: #2a2a35;
+    --accent: #c8a96e;
+    --accent2: #e85d4a;
+    --text: #e8e4dc;
+    --muted: #6b6870;
+    --spy: #e85d4a;
+    --civilian: #5ba87a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif TC', serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 20%, rgba(200,169,110,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 80%, rgba(232,93,74,0.05) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .screen {
+    display: none;
+    width: 100%;
+    max-width: 520px;
+    animation: fadeIn 0.4s ease;
+  }
+  .screen.active { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .logo {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .logo-title {
+    font-family: 'Special Elite', cursive;
+    font-size: clamp(2rem, 8vw, 3.5rem);
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    line-height: 1;
+    text-shadow: 0 0 40px rgba(200,169,110,0.3);
+  }
+  .logo-zh {
+    font-size: clamp(1rem, 4vw, 1.4rem);
+    color: var(--muted);
+    margin-top: 6px;
+    letter-spacing: 0.3em;
+  }
+  .logo-divider {
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    margin: 16px auto;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.8rem;
+    letter-spacing: 0.15em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  input[type="number"], input[type="text"] {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1.1rem;
+    padding: 12px 16px;
+    outline: none;
+    transition: border-color 0.2s;
+    -moz-appearance: textfield;
+  }
+  input[type="number"]::-webkit-inner-spin-button { display: none; }
+  input:focus { border-color: var(--accent); }
+
+  .btn {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Noto Serif TC', serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 10px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #0d0d0f;
+  }
+  .btn-primary:hover { background: #d9b97a; transform: translateY(-1px); }
+  .btn-secondary {
+    background: transparent;
+    color: var(--accent);
+    border: 1px solid var(--accent);
+  }
+  .btn-secondary:hover { background: rgba(200,169,110,0.08); }
+  .btn-danger {
+    background: var(--accent2);
+    color: white;
+  }
+  .btn-danger:hover { background: #f06b58; }
+
+  .player-names { display: flex; flex-direction: column; gap: 10px; }
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .name-num {
+    width: 28px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+    flex-shrink: 0;
+  }
+
+  /* Identity reveal */
+  .cover-card {
+    text-align: center;
+    padding: 48px 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .cover-player-num {
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 24px;
+  }
+  .cover-icon { font-size: 4rem; margin-bottom: 16px; }
+  .cover-role {
+    font-size: 1.8rem;
+    font-weight: 900;
+    letter-spacing: 0.1em;
+    margin-bottom: 20px;
+  }
+  .role-spy { color: var(--spy); }
+  .role-civilian { color: var(--civilian); }
+  .cover-hint {
+    font-size: 0.9rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+  .keyword-reveal {
+    display: inline-block;
+    margin-top: 16px;
+    background: rgba(91,168,122,0.12);
+    border: 1px solid rgba(91,168,122,0.3);
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--civilian);
+    letter-spacing: 0.1em;
+  }
+
+  /* Voting */
+  .section-title {
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+  .alive-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .chip {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--muted);
+  }
+  .chip.alive { color: var(--text); border-color: var(--border); }
+
+  .vote-list { display: flex; flex-direction: column; gap: 8px; }
+  .vote-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+  }
+  .vote-label { flex: 1; color: var(--muted); }
+  .vote-select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-family: 'Noto Serif TC', serif;
+    padding: 6px 10px;
+    outline: none;
+    font-size: 0.9rem;
+  }
+
+  /* Results */
+  .result-bar-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .result-row { display: flex; align-items: center; gap: 12px; }
+  .result-name { width: 60px; font-size: 0.85rem; color: var(--muted); flex-shrink: 0; }
+  .bar-wrap { flex: 1; background: var(--surface); border-radius: 4px; height: 24px; overflow: hidden; }
+  .bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    background: var(--accent);
+    transition: width 0.6s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 8px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #0d0d0f;
+  }
+  .bar-fill.max { background: var(--accent2); }
+
+  .elim-card {
+    text-align: center;
+    padding: 32px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+  .elim-card.spy-caught { background: rgba(232,93,74,0.1); border: 1px solid rgba(232,93,74,0.3); }
+  .elim-card.civ-elim { background: rgba(91,168,122,0.05); border: 1px solid rgba(91,168,122,0.2); }
+  .elim-name { font-size: 1.5rem; font-weight: 900; margin-bottom: 8px; }
+  .elim-role-tag {
+    display: inline-block;
+    padding: 4px 16px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+  }
+  .tag-spy { background: rgba(232,93,74,0.2); color: var(--spy); }
+  .tag-civ { background: rgba(91,168,122,0.2); color: var(--civilian); }
+
+  /* Victory */
+  .victory {
+    text-align: center;
+    padding: 48px 28px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .victory-icon { font-size: 5rem; margin-bottom: 16px; }
+  .victory-title { font-size: 2rem; font-weight: 900; margin-bottom: 12px; }
+  .victory-subtitle { color: var(--muted); margin-bottom: 24px; font-size: 0.95rem; }
+  .keyword-box {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 24px;
+    margin-bottom: 8px;
+    font-size: 1.1rem;
+  }
+  .keyword-label { color: var(--muted); font-size: 0.8rem; }
+  .keyword-word { color: var(--accent); font-weight: 700; font-size: 1.3rem; }
+  .stat-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin: 24px 0;
+  }
+  .stat { text-align: center; }
+  .stat-val { font-size: 2rem; font-weight: 900; color: var(--accent); }
+  .stat-key { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.1em; }
+
+  .tie-notice {
+    text-align: center;
+    padding: 20px;
+    background: rgba(200,169,110,0.07);
+    border: 1px solid rgba(200,169,110,0.2);
+    border-radius: 8px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-size: 0.95rem;
+  }
+
+  .round-badge {
+    display: inline-block;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin-bottom: 16px;
+  }
+
+  .hint-box {
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+
+  .err { color: var(--accent2); font-size: 0.8rem; margin-top: 6px; display: none; }
+  .err.show { display: block; }
+</style>
+</head>
+<body>
+
+<!-- SCREEN 1: SETUP -->
+<div id="screen-setup" class="screen active">
+  <div class="logo">
+    <div class="logo-title">AGENT X</div>
+    <div class="logo-zh">心機間諜</div>
+    <div class="logo-divider"></div>
+  </div>
+  <div class="card">
+    <label>玩家人數 (4–10 人)</label>
+    <input type="number" id="player-count-input" min="4" max="10" value="5" placeholder="輸入人數">
+    <div class="err" id="count-err">請輸入 4 到 10 之間的數字</div>
+  </div>
+  <div class="card" id="names-card">
+    <label>玩家暱稱（選填）</label>
+    <div class="player-names" id="player-names-list"></div>
+  </div>
+  <button class="btn btn-primary" onclick="startGame()">▶ 開始遊戲</button>
+</div>
+
+<!-- SCREEN 2: IDENTITY REVEAL -->
+<div id="screen-identity" class="screen">
+  <div id="identity-content"></div>
+</div>
+
+<!-- SCREEN 3: DISCUSSION PROMPT -->
+<div id="screen-discuss" class="screen">
+  <div class="logo">
+    <div class="logo-title">AGENT X</div>
+    <div class="logo-divider"></div>
+  </div>
+  <div class="card" style="text-align:center; padding: 36px 28px;">
+    <div style="font-size:2.5rem; margin-bottom:16px;">🎤</div>
+    <div id="discuss-round" class="round-badge"></div>
+    <div style="font-size:1.2rem; font-weight:700; margin-bottom:12px;">開始發言！</div>
+    <div id="discuss-alive" style="color:var(--muted); font-size:0.9rem; margin-bottom:20px;"></div>
+    <div class="hint-box">
+      每位玩家輪流用<strong style="color:var(--text);">一句話</strong>描述你腦中的詞彙，<br>
+      不能直接說出關鍵詞！間諜要假裝知道。
+    </div>
+  </div>
+  <button class="btn btn-primary" onclick="goToVote()">🗳️ 進入投票</button>
+</div>
+
+<!-- SCREEN 4: VOTING -->
+<div id="screen-vote" class="screen">
+  <div class="logo">
+    <div class="logo-title">AGENT X</div>
+    <div class="logo-divider"></div>
+  </div>
+  <div class="card">
+    <div id="vote-round" class="round-badge"></div>
+    <div class="section-title">存活玩家</div>
+    <div class="alive-chips" id="alive-chips"></div>
+    <div class="section-title">投票</div>
+    <div class="vote-list" id="vote-list"></div>
+    <div class="err" id="vote-err">請確認所有人都已投票</div>
+  </div>
+  <button class="btn btn-danger" onclick="countVotes()">確認投票結果</button>
+</div>
+
+<!-- SCREEN 5: VOTE RESULT -->
+<div id="screen-result" class="screen">
+  <div class="logo">
+    <div class="logo-title">AGENT X</div>
+    <div class="logo-divider"></div>
+  </div>
+  <div id="result-content"></div>
+  <button class="btn btn-primary" id="result-next-btn" onclick="nextRound()"></button>
+</div>
+
+<!-- SCREEN 6: VICTORY -->
+<div id="screen-victory" class="screen">
+  <div id="victory-content"></div>
+  <button class="btn btn-secondary" onclick="restartGame()">🔄 再玩一局</button>
+</div>
+
+<script>
+  // ── State ────────────────────────────────────────
+  let state = {
+    playerCount: 0,
+    playerNames: [],
+    secretWord: '',
+    roles: [],
+    alive: [],
+    round: 1,
+    identityIndex: 0,
+    startTime: null,
+  };
+
+  const wordList = [
+    "奶茶", "火鍋", "海灘", "飛機", "醫院",
+    "健身房", "學校", "咖啡", "電影院", "超市",
+    "遊樂園", "圖書館", "警察局", "地鐵站", "動物園",
+    "便利商店", "游泳池", "餐廳", "機場", "博物館"
+  ];
+
+  // ── Setup screen: dynamic name inputs ────────────
+  const countInput = document.getElementById('player-count-input');
+  const namesList = document.getElementById('player-names-list');
+
+  function renderNameInputs(n) {
+    namesList.innerHTML = '';
+    for (let i = 0; i < n; i++) {
+      const row = document.createElement('div');
+      row.className = 'name-row';
+      row.innerHTML = `
+        <span class="name-num">${i+1}</span>
+        <input type="text" placeholder="玩家 ${i+1}" maxlength="8" id="name-${i}">
+      `;
+      namesList.appendChild(row);
+    }
+  }
+
+  countInput.addEventListener('input', () => {
+    const v = parseInt(countInput.value);
+    if (v >= 4 && v <= 10) renderNameInputs(v);
+  });
+  renderNameInputs(5);
+
+  // ── Start game ───────────────────────────────────
+  function startGame() {
+    const n = parseInt(countInput.value);
+    if (!n || n < 4 || n > 10) {
+      document.getElementById('count-err').classList.add('show');
+      return;
+    }
+    document.getElementById('count-err').classList.remove('show');
+
+    state.playerCount = n;
+    state.playerNames = [];
+    for (let i = 0; i < n; i++) {
+      const inp = document.getElementById(`name-${i}`);
+      state.playerNames.push(inp && inp.value.trim() ? inp.value.trim() : `玩家${i+1}`);
+    }
+    state.secretWord = wordList[Math.floor(Math.random() * wordList.length)];
+    state.roles = Array(n).fill('平民');
+    const spyIdx = Math.floor(Math.random() * n);
+    state.roles[spyIdx] = '間諜';
+    state.alive = Array.from({length: n}, (_, i) => i);
+    state.round = 1;
+    state.identityIndex = 0;
+    state.startTime = Date.now();
+
+    showIdentity(0);
+  }
+
+  // ── Identity reveal ──────────────────────────────
+  function showIdentity(idx) {
+    state.identityIndex = idx;
+    const isSpy = state.roles[idx] === '間諜';
+    const name = state.playerNames[idx];
+
+    document.getElementById('identity-content').innerHTML = `
+      <div class="cover-card">
+        <div class="cover-player-num">玩家 ${idx+1} / ${state.playerCount}</div>
+        <div class="cover-icon">${isSpy ? '🕵️' : '🙂'}</div>
+        <div class="cover-role ${isSpy ? 'role-spy' : 'role-civilian'}">
+          ${name}<br><span style="font-size:1rem;">${isSpy ? '【間諜】' : '【平民】'}</span>
+        </div>
+        <div class="cover-hint">
+          ${isSpy
+            ? '你不知道關鍵詞。<br>假裝知道，混入平民之中！'
+            : `關鍵詞是：<div class="keyword-reveal">${state.secretWord}</div>`}
+        </div>
+        <button class="btn btn-primary" style="margin-top:28px;" onclick="nextIdentity()">
+          ✓ 已看完，交給下一位
+        </button>
+      </div>
+    `;
+    showScreen('screen-identity');
+  }
+
+  function nextIdentity() {
+    const next = state.identityIndex + 1;
+    if (next < state.playerCount) {
+      showIdentity(next);
+    } else {
+      showDiscuss();
+    }
+  }
+
+  // ── Discussion ───────────────────────────────────
+  function showDiscuss() {
+    document.getElementById('discuss-round').textContent = `第 ${state.round} 輪`;
+    const aliveNames = state.alive.map(i => state.playerNames[i]).join('、');
+    document.getElementById('discuss-alive').textContent = `存活：${aliveNames}`;
+    showScreen('screen-discuss');
+  }
+
+  function goToVote() {
+    renderVoteScreen();
+    showScreen('screen-vote');
+  }
+
+  // ── Voting ───────────────────────────────────────
+  function renderVoteScreen() {
+    document.getElementById('vote-round').textContent = `第 ${state.round} 輪投票`;
+
+    // Alive chips
+    const chips = document.getElementById('alive-chips');
+    chips.innerHTML = state.alive.map(i =>
+      `<span class="chip alive">${state.playerNames[i]}</span>`
+    ).join('');
+
+    // Vote selects
+    const list = document.getElementById('vote-list');
+    list.innerHTML = state.alive.map(voterIdx => {
+      const options = state.alive
+        .filter(i => i !== voterIdx)
+        .map(i => `<option value="${i}">${state.playerNames[i]}</option>`)
+        .join('');
+      return `
+        <div class="vote-row">
+          <span class="vote-label">${state.playerNames[voterIdx]}</span>
+          <span style="color:var(--muted);font-size:0.8rem;">投給</span>
+          <select class="vote-select" id="vote-${voterIdx}">${options}</select>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function countVotes() {
+    const tally = {};
+    state.alive.forEach(i => { tally[i] = 0; });
+
+    for (const voterIdx of state.alive) {
+      const sel = document.getElementById(`vote-${voterIdx}`);
+      if (!sel) continue;
+      const target = parseInt(sel.value);
+      tally[target] = (tally[target] || 0) + 1;
+    }
+
+    const maxVotes = Math.max(...Object.values(tally));
+    const candidates = Object.keys(tally).filter(k => tally[k] === maxVotes).map(Number);
+
+    showResult(tally, maxVotes, candidates);
+  }
+
+  // ── Result ───────────────────────────────────────
+  function showResult(tally, maxVotes, candidates) {
+    const totalVotes = Object.values(tally).reduce((a,b) => a+b, 0);
+    let html = '';
+
+    // Bar chart
+    html += `<div class="card">`;
+    html += `<div class="section-title">票數結果</div>`;
+    html += `<div class="result-bar-list">`;
+    state.alive.forEach(i => {
+      const v = tally[i] || 0;
+      const pct = totalVotes > 0 ? Math.round(v / totalVotes * 100) : 0;
+      const isMax = v === maxVotes && candidates.includes(i);
+      html += `
+        <div class="result-row">
+          <span class="result-name">${state.playerNames[i]}</span>
+          <div class="bar-wrap">
+            <div class="bar-fill ${isMax ? 'max' : ''}" style="width:${pct}%">
+              ${v > 0 ? v + '票' : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    html += `</div></div>`;
+
+    const nextBtn = document.getElementById('result-next-btn');
+
+    if (candidates.length > 1) {
+      // Tie
+      const tieNames = candidates.map(i => state.playerNames[i]).join('、');
+      html += `<div class="tie-notice">🤯 平票！${tieNames} 各得 ${maxVotes} 票<br>本輪無人淘汰，繼續下一輪！</div>`;
+      nextBtn.textContent = '▶ 繼續下一輪';
+      nextBtn.onclick = () => {
+        state.round++;
+        showDiscuss();
+      };
+    } else {
+      const eliminated = candidates[0];
+      const elimRole = state.roles[eliminated];
+      const isSpy = elimRole === '間諜';
+
+      html += `
+        <div class="elim-card ${isSpy ? 'spy-caught' : 'civ-elim'}">
+          <div style="font-size:2rem; margin-bottom:12px;">${isSpy ? '🎉' : '😔'}</div>
+          <div class="elim-name">${state.playerNames[eliminated]}</div>
+          <div class="elim-role-tag ${isSpy ? 'tag-spy' : 'tag-civ'}">${elimRole}</div>
+          <div style="color:var(--muted); font-size:0.9rem;">
+            ${isSpy ? '間諜落網了！' : '可惜，是平民被淘汰了...'}
+          </div>
+        </div>
+      `;
+
+      // Remove eliminated
+      state.alive = state.alive.filter(i => i !== eliminated);
+
+      // Check victory
+      const aliveRoles = state.alive.map(i => state.roles[i]);
+      const spyAlive = aliveRoles.includes('間諜');
+
+      if (isSpy && !spyAlive) {
+        nextBtn.textContent = '🏆 查看結果';
+        nextBtn.onclick = () => showVictory('civilian');
+      } else if (state.alive.length <= 2 && spyAlive) {
+        nextBtn.textContent = '💀 查看結果';
+        nextBtn.onclick = () => showVictory('spy');
+      } else {
+        state.round++;
+        nextBtn.textContent = '▶ 繼續下一輪';
+        nextBtn.onclick = () => showDiscuss();
+      }
+    }
+
+    document.getElementById('result-content').innerHTML = html;
+    showScreen('screen-result');
+  }
+
+  function nextRound() {} // overridden dynamically
+
+  // ── Victory ──────────────────────────────────────
+  function showVictory(winner) {
+    const elapsed = Math.round((Date.now() - state.startTime) / 1000);
+    const mins = Math.floor(elapsed / 60);
+    const secs = elapsed % 60;
+    const timeStr = mins > 0 ? `${mins}分${secs}秒` : `${secs}秒`;
+    const spyIdx = state.roles.indexOf('間諜');
+
+    const isCivWin = winner === 'civilian';
+    document.getElementById('victory-content').innerHTML = `
+      <div class="victory">
+        <div class="victory-icon">${isCivWin ? '🎉' : '😈'}</div>
+        <div class="victory-title" style="color:${isCivWin ? 'var(--civilian)' : 'var(--spy)'}">
+          ${isCivWin ? '平民勝利！' : '間諜勝利！'}
+        </div>
+        <div class="victory-subtitle">
+          ${isCivWin ? '成功揪出間諜，任務完成！' : '間諜成功混入，躲過追查！'}
+        </div>
+        <div class="keyword-box">
+          <span class="keyword-label">關鍵詞</span>
+          <span class="keyword-word">${state.secretWord}</span>
+        </div>
+        <div style="margin-top:8px; color:var(--muted); font-size:0.85rem;">
+          間諜是：<strong style="color:${isCivWin ? 'var(--spy)' : 'var(--accent)'}">${state.playerNames[spyIdx]}</strong>
+        </div>
+        <div class="stat-row">
+          <div class="stat">
+            <div class="stat-val">${state.round}</div>
+            <div class="stat-key">ROUNDS</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val">${timeStr}</div>
+            <div class="stat-key">TIME</div>
+          </div>
+          <div class="stat">
+            <div class="stat-val">${state.playerCount}</div>
+            <div class="stat-key">PLAYERS</div>
+          </div>
+        </div>
+      </div>
+    `;
+    showScreen('screen-victory');
+  }
+
+  // ── Helpers ──────────────────────────────────────
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function restartGame() {
+    // Reset name inputs
+    renderNameInputs(parseInt(countInput.value) || 5);
+    showScreen('screen-setup');
+  }
+</script>
+</body>
+</html>
